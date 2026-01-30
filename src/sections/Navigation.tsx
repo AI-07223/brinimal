@@ -1,71 +1,79 @@
-import { useState, useEffect } from 'react';
-import { ShoppingBag, Menu, X } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { MessageCircle, Menu, X } from "lucide-react";
 
-interface NavigationProps {
-  cartCount?: number;
-}
-
-export default function Navigation({ cartCount = 0 }: NavigationProps) {
+export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 100);
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-    setIsMobileMenuOpen(false);
-  };
 
   return (
     <>
       <nav
         className={`fixed top-0 left-0 right-0 z-[1000] transition-all duration-500 ${
-          isScrolled
-            ? 'bg-sage/90 backdrop-blur-sm py-4'
-            : 'bg-transparent py-6'
+          isScrolled || !isHomePage
+            ? "bg-sage/90 backdrop-blur-sm py-4"
+            : "bg-transparent py-6"
         }`}
       >
         <div className="w-full px-6 lg:px-12 flex items-center justify-between">
           {/* Logo */}
-          <button
-            onClick={() => scrollToSection('hero')}
+          <Link
+            to="/"
             className="heading-display text-xl lg:text-2xl tracking-[0.2em] text-[#1A1A1A] hover:text-gold transition-colors"
           >
             BRINIMAL
-          </button>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-10">
-            <button onClick={() => scrollToSection('collection')} className="nav-link">
+            <Link
+              to="/shop"
+              className={`nav-link ${location.pathname === "/shop" ? "text-gold" : ""}`}
+            >
               Shop
-            </button>
-            <button onClick={() => scrollToSection('lookbook')} className="nav-link">
+            </Link>
+            <Link
+              to="/lookbook"
+              className={`nav-link ${location.pathname === "/lookbook" ? "text-gold" : ""}`}
+            >
               Lookbook
-            </button>
-            <button onClick={() => scrollToSection('story')} className="nav-link">
+            </Link>
+            <Link
+              to="/about"
+              className={`nav-link ${location.pathname === "/about" ? "text-gold" : ""}`}
+            >
               About
-            </button>
-            <button onClick={() => scrollToSection('contact')} className="nav-link">
+            </Link>
+            <Link
+              to="/contact"
+              className={`nav-link ${location.pathname === "/contact" ? "text-gold" : ""}`}
+            >
               Contact
-            </button>
+            </Link>
           </div>
 
-          {/* Cart & Mobile Menu */}
+          {/* Contact Us & Mobile Menu */}
           <div className="flex items-center gap-4">
-            <button className="flex items-center gap-2 text-[#1A1A1A] hover:text-gold transition-colors">
-              <ShoppingBag size={18} strokeWidth={1.5} />
-              <span className="text-micro hidden sm:inline">Cart ({cartCount})</span>
-            </button>
+            <a
+              href="https://wa.me/1234567890"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-[#1A1A1A] hover:text-gold transition-colors"
+            >
+              <MessageCircle size={18} strokeWidth={1.5} />
+              <span className="text-micro hidden sm:inline">Contact Us</span>
+            </a>
 
             {/* Mobile Menu Button */}
             <button
@@ -81,34 +89,38 @@ export default function Navigation({ cartCount = 0 }: NavigationProps) {
       {/* Mobile Menu */}
       <div
         className={`fixed inset-0 z-[999] bg-sage transition-transform duration-500 lg:hidden ${
-          isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div className="flex flex-col items-center justify-center h-full gap-8">
-          <button
-            onClick={() => scrollToSection('collection')}
-            className="heading-section text-3xl"
+          <Link
+            to="/shop"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className={`heading-section text-3xl ${location.pathname === "/shop" ? "text-gold" : ""}`}
           >
             Shop
-          </button>
-          <button
-            onClick={() => scrollToSection('lookbook')}
-            className="heading-section text-3xl"
+          </Link>
+          <Link
+            to="/lookbook"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className={`heading-section text-3xl ${location.pathname === "/lookbook" ? "text-gold" : ""}`}
           >
             Lookbook
-          </button>
-          <button
-            onClick={() => scrollToSection('story')}
-            className="heading-section text-3xl"
+          </Link>
+          <Link
+            to="/about"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className={`heading-section text-3xl ${location.pathname === "/about" ? "text-gold" : ""}`}
           >
             About
-          </button>
-          <button
-            onClick={() => scrollToSection('contact')}
-            className="heading-section text-3xl"
+          </Link>
+          <Link
+            to="/contact"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className={`heading-section text-3xl ${location.pathname === "/contact" ? "text-gold" : ""}`}
           >
             Contact
-          </button>
+          </Link>
         </div>
       </div>
     </>

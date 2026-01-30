@@ -8,24 +8,29 @@ gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 interface Section {
   id: string;
   label: string;
+  pinned: boolean;
 }
 
+// All sections with their pinned status
 const sections: Section[] = [
-  { id: "hero", label: "Home" },
-  { id: "signature", label: "Signature" },
-  { id: "lookbook", label: "Lookbook" },
-  { id: "collection", label: "Collection" },
-  { id: "campaign", label: "Campaign" },
-  { id: "essence", label: "Essence" },
-  { id: "story", label: "Story" },
-  { id: "detail", label: "Detail" },
-  { id: "mood", label: "Mood" },
-  { id: "light", label: "Light" },
-  { id: "silhouette", label: "Silhouette" },
-  { id: "form", label: "Form" },
-  { id: "grace", label: "Grace" },
-  { id: "contact", label: "Contact" },
+  { id: "hero", label: "Home", pinned: true },
+  { id: "signature", label: "Signature", pinned: true },
+  { id: "lookbook", label: "Lookbook", pinned: true },
+  { id: "collection", label: "Collection", pinned: true },
+  { id: "campaign", label: "Campaign", pinned: true },
+  { id: "essence", label: "Essence", pinned: true },
+  { id: "story", label: "Story", pinned: true },
+  { id: "detail", label: "Detail", pinned: true },
+  { id: "mood", label: "Mood", pinned: true },
+  { id: "light", label: "Light", pinned: true },
+  { id: "silhouette", label: "Silhouette", pinned: true },
+  { id: "form", label: "Form", pinned: true },
+  { id: "grace", label: "Grace", pinned: true },
+  { id: "contact", label: "Contact", pinned: false },
 ];
+
+// Only show dots for pinned sections on the home page
+const pinnedSections = sections.filter((s) => s.pinned);
 
 export default function NavigationDots() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -40,6 +45,8 @@ export default function NavigationDots() {
         .filter((st) => st.vars.pin)
         .sort((a, b) => a.start - b.start);
 
+      if (pinned.length === 0) return;
+
       // Create ScrollTrigger to track active section
       ScrollTrigger.create({
         trigger: document.body,
@@ -48,19 +55,26 @@ export default function NavigationDots() {
         onUpdate: (self) => {
           const scrollY = self.scroll();
 
-          // Find which section is currently in view
+          // Find which pinned section is currently in view
           let currentIndex = 0;
           for (let i = 0; i < pinned.length; i++) {
             const st = pinned[i];
-            if (scrollY >= st.start - 100) {
+            // Check if we're past the start of this section
+            if (scrollY >= st.start - window.innerHeight * 0.3) {
               currentIndex = i;
             }
           }
 
           // Check if we're in the contact section (flowing)
           const maxScroll = ScrollTrigger.maxScroll(window);
-          if (scrollY > maxScroll - window.innerHeight * 1.5) {
-            currentIndex = sections.length - 1;
+          const contactThreshold = maxScroll - window.innerHeight * 1.5;
+
+          if (
+            scrollY > contactThreshold &&
+            scrollY > pinned[pinned.length - 1].end
+          ) {
+            // We're in the contact section, show last dot as active
+            currentIndex = pinned.length - 1;
           }
 
           setActiveIndex(currentIndex);
@@ -72,13 +86,27 @@ export default function NavigationDots() {
   }, []);
 
   const scrollToSection = (index: number) => {
-    const sectionId = sections[index]?.id;
-    if (!sectionId) return;
+    const section = pinnedSections[index];
+    if (!section) return;
 
-    const element = document.getElementById(sectionId);
+    const element = document.getElementById(section.id);
     if (element) {
-      // Use native smooth scroll
-      element.scrollIntoView({ behavior: "smooth" });
+      // Use GSAP for smoother scrolling to the pinned center
+      const st = ScrollTrigger.getAll()
+        .filter((s) => s.vars.pin)
+        .sort((a, b) => a.start - b.start)[index];
+
+      if (st) {
+        // Scroll to the center of the pinned range for best viewing
+        const targetScroll = st.start + ((st.end ?? st.start) - st.start) * 0.5;
+        gsap.to(window, {
+          duration: 0.8,
+          scrollTo: { y: targetScroll, autoKill: false },
+          ease: "power2.inOut",
+        });
+      } else {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
     }
   };
 
@@ -86,7 +114,7 @@ export default function NavigationDots() {
 
   return (
     <div className="fixed right-3 sm:right-6 top-1/2 -translate-y-1/2 z-[200] flex flex-col items-center gap-2 sm:gap-3">
-      {sections.map((section, index) => (
+      {pinnedSections.map((section, index) => (
         <button
           key={section.id}
           onClick={() => scrollToSection(index)}
@@ -94,7 +122,7 @@ export default function NavigationDots() {
           aria-label={`Go to ${section.label}`}
         >
           {/* Tooltip */}
-          <span className="absolute right-full mr-4 px-3 py-1.5 bg-[#1A1A1A]/90 text-white text-xs tracking-widest uppercase rounded-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none">
+          <span className="absolute right-full mr-4 px-3 py-1.5 bg-[#1A1A1A]/90 text-white text-xs tracking-widest uppercase rounded-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none text-shadow-subtle">
             {section.label}
           </span>
 

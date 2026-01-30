@@ -31,28 +31,9 @@ export default function SilhouetteSection({
       gsap.set(headlineBlockRef.current, { x: "40vw", opacity: 0 });
       gsap.set(scrollHintRef.current, { y: 10, opacity: 0 });
 
-      // Entrance timeline
-      const entranceTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: section,
-          start: "top top",
-          end: "+=100%",
-          pin: true,
-          onEnter: () => {
-            entranceTl.restart();
-          },
-          onLeaveBack: () => {
-            // Reset to initial states when scrolling back past start
-            gsap.set(imageRef.current, { scale: 1.1, opacity: 0 });
-            gsap.set(topBarRef.current, { y: "-12vh" });
-            gsap.set(bottomBarRef.current, { y: "12vh" });
-            gsap.set(headlineBlockRef.current, { x: "40vw", opacity: 0 });
-            gsap.set(scrollHintRef.current, { y: 10, opacity: 0 });
-          },
-        },
-      });
+      // Entrance timeline (paused - controlled by ScrollTrigger callbacks)
+      const entranceTl = gsap.timeline({ paused: true });
 
-      // Entrance animations
       entranceTl.to(
         imageRef.current,
         {
@@ -68,7 +49,7 @@ export default function SilhouetteSection({
         topBarRef.current,
         {
           y: 0,
-          duration: 1.2,
+          duration: 0.9,
           ease: "power3.out",
         },
         0,
@@ -78,7 +59,7 @@ export default function SilhouetteSection({
         bottomBarRef.current,
         {
           y: 0,
-          duration: 1.2,
+          duration: 0.9,
           ease: "power3.out",
         },
         0,
@@ -89,41 +70,31 @@ export default function SilhouetteSection({
         {
           x: 0,
           opacity: 1,
-          duration: 1.2,
+          duration: 1.0,
           ease: "power3.out",
         },
-        0,
+        0.15,
       );
 
       entranceTl.to(
         scrollHintRef.current,
         { y: 0, opacity: 0.7, duration: 0.5, ease: "power3.out" },
-        0.3,
+        0.5,
       );
 
-      // Exit timeline - triggered at end of pin
-      const exitTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: section,
-          start: "top top",
-          end: "+=100%",
-          pin: true,
-          onLeave: () => {
-            exitTl.restart();
-          },
-          onEnterBack: () => {
-            entranceTl.play(0);
-          },
-        },
-      });
+      // Exit timeline (paused - controlled by ScrollTrigger callbacks)
+      const exitTl = gsap.timeline({ paused: true });
 
-      // Exit animations (paused initially)
-      exitTl.to(imageRef.current, {
-        scale: 1.06,
-        opacity: 0,
-        duration: 0.6,
-        ease: "power3.in",
-      });
+      exitTl.to(
+        imageRef.current,
+        {
+          scale: 1.06,
+          opacity: 0,
+          duration: 0.6,
+          ease: "power3.in",
+        },
+        0,
+      );
 
       exitTl.to(
         topBarRef.current,
@@ -132,7 +103,7 @@ export default function SilhouetteSection({
           duration: 0.6,
           ease: "power3.in",
         },
-        "<",
+        0,
       );
 
       exitTl.to(
@@ -142,7 +113,7 @@ export default function SilhouetteSection({
           duration: 0.6,
           ease: "power3.in",
         },
-        "<",
+        0,
       );
 
       exitTl.to(
@@ -153,7 +124,7 @@ export default function SilhouetteSection({
           duration: 0.6,
           ease: "power3.in",
         },
-        "<",
+        0,
       );
 
       exitTl.to(
@@ -162,7 +133,19 @@ export default function SilhouetteSection({
         0,
       );
 
-      exitTl.pause();
+      // Single ScrollTrigger with callbacks (same pattern as other sections)
+      ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        end: "+=100%",
+        pin: true,
+        onEnter: () => entranceTl.play(0),
+        onLeave: () => exitTl.play(0),
+        onEnterBack: () => {
+          entranceTl.play(0);
+        },
+        onLeaveBack: () => exitTl.play(0),
+      });
     }, section);
 
     return () => ctx.revert();

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./App.css";
@@ -21,9 +22,16 @@ import FormSection from "./sections/FormSection";
 import GraceSection from "./sections/GraceSection";
 import ContactSection from "./sections/ContactSection";
 
+// Import pages
+import ShopPage from "./pages/ShopPage";
+import LookbookPage from "./pages/LookbookPage";
+import AboutPage from "./pages/AboutPage";
+import ContactPage from "./pages/ContactPage";
+
 gsap.registerPlugin(ScrollTrigger);
 
-function App() {
+// Main Home component with scroll sections
+function Home() {
   const mainRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,10 +62,18 @@ function App() {
       center: (st.start + ((st.end ?? st.start) - st.start) * 0.5) / maxScroll,
     }));
 
+    // Get the last pinned section (GraceSection) - snapping stops after this
+    const lastPinnedEnd = pinnedRanges[pinnedRanges.length - 1]?.end ?? 1;
+
     ScrollTrigger.create({
       snap: {
         snapTo: (value: number) => {
-          // Check if within any pinned section range (with larger buffer for smoothness)
+          // Don't snap if we're past the last pinned section (in flowing content)
+          if (value > lastPinnedEnd + 0.02) {
+            return value;
+          }
+
+          // Check if within any pinned section range (with buffer for smoothness)
           const inPinned = pinnedRanges.some(
             (r) => value >= r.start - 0.05 && value <= r.end + 0.05,
           );
@@ -95,7 +111,7 @@ function App() {
       {/* Navigation */}
       <Navigation />
 
-      {/* Dot Navigation */}
+      {/* Dot Navigation - Only on home page */}
       <NavigationDots />
 
       {/* Main Content */}
@@ -136,13 +152,28 @@ function App() {
         {/* Section 12: Form (Two Panels) */}
         <FormSection className="z-[120]" />
 
-        {/* Section 13: Grace (Full Frame, Top-Left Title) */}
+        {/* Section 13: Grace (Full Frame, Top-Left Title) - LAST PINNED SECTION */}
         <GraceSection className="z-[130]" />
 
-        {/* Section 14: Contact (Flowing) */}
+        {/* Section 14: Contact (Flowing) - Snapping stops before this section */}
         <ContactSection />
       </main>
     </div>
+  );
+}
+
+// Main App with Router
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/shop" element={<ShopPage />} />
+        <Route path="/lookbook" element={<LookbookPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
