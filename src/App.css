@@ -1,0 +1,64 @@
+/* BRINIMAL App Styles */
+
+/* Ensure smooth scrolling behavior */
+html {
+  scroll-behavior: auto;
+}
+
+/* Hide scrollbar for cleaner look while maintaining functionality */
+body::-webkit-scrollbar {
+  width: 6px;
+}
+
+body::-webkit-scrollbar-track {
+  background: #B7C4B6;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: rgba(26, 26, 26, 0.3);
+  border-radius: 3px;
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: rgba(26, 26, 26, 0.5);
+}
+
+/* Ensure pinned sections stack correctly */
+.section-pinned {
+  will-change: transform, opacity;
+}
+
+/* Image loading optimization */
+.editorial-image {
+  will-change: transform;
+}
+
+/* Prevent text selection during scroll animations */
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .heading-hero {
+    font-size: clamp(32px, 12vw, 64px) !important;
+  }
+  
+  .heading-section {
+    font-size: clamp(28px, 8vw, 48px) !important;
+  }
+  
+  .frame-bar {
+    height: 8vh;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
