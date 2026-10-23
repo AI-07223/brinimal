@@ -21,6 +21,7 @@ import SilhouetteSection from "./sections/SilhouetteSection";
 import FormSection from "./sections/FormSection";
 import GraceSection from "./sections/GraceSection";
 import ContactSection from "./sections/ContactSection";
+import { snapToPinnedSection } from "@/lib/pinnedSnap";
 
 // Import pages
 import ShopPage from "./pages/ShopPage";
@@ -62,40 +63,9 @@ function Home() {
       center: (st.start + ((st.end ?? st.start) - st.start) * 0.5) / maxScroll,
     }));
 
-    // Get the last pinned section (GraceSection) - snapping stops after this
-    const lastPinnedEnd = pinnedRanges[pinnedRanges.length - 1]?.end ?? 1;
-
     ScrollTrigger.create({
       snap: {
-        snapTo: (value: number) => {
-          // Don't snap if we're past the last pinned section (in flowing content)
-          if (value > lastPinnedEnd + 0.02) {
-            return value;
-          }
-
-          // Check if within any pinned section range (with buffer for smoothness)
-          const inPinned = pinnedRanges.some(
-            (r) => value >= r.start - 0.05 && value <= r.end + 0.05,
-          );
-
-          // If not in a pinned section (in flowing content), don't snap
-          if (!inPinned) return value;
-
-          // Find nearest section center
-          const target = pinnedRanges.reduce(
-            (closest, r) =>
-              Math.abs(r.center - value) < Math.abs(closest - value)
-                ? r.center
-                : closest,
-            pinnedRanges[0]?.center ?? 0,
-          );
-
-          // Only snap if we're close enough to a section center (within 15%)
-          const distance = Math.abs(target - value);
-          if (distance > 0.15) return value;
-
-          return target;
-        },
+        snapTo: (value: number) => snapToPinnedSection(value, pinnedRanges),
         duration: { min: 0.35, max: 0.6 },
         delay: 0.02,
         ease: "power2.inOut",
