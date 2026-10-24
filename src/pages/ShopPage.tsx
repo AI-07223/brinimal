@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Filter, ChevronDown, Heart, ShoppingBag } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
+import { resolveShopCategory } from "@/lib/shopCategory";
 
 interface Product {
   id: number;
@@ -124,9 +125,8 @@ const sortOptions = [
 
 export default function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [selectedCategory, setSelectedCategory] = useState(
-    searchParams.get("category") || "all"
-  );
+  // Derived from the query so footer links and back/forward stay in sync.
+  const selectedCategory = resolveShopCategory(searchParams.get("category"));
   const [sortBy, setSortBy] = useState("featured");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [favorites, setFavorites] = useState<number[]>([]);
@@ -156,13 +156,15 @@ export default function ShopPage() {
   }, [selectedCategory, sortBy]);
 
   const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
-    if (category === "all") {
-      searchParams.delete("category");
-    } else {
-      searchParams.set("category", category);
-    }
-    setSearchParams(searchParams);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (category === "all") {
+        next.delete("category");
+      } else {
+        next.set("category", category);
+      }
+      return next;
+    });
     setIsFilterOpen(false);
   };
 
