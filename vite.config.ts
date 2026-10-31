@@ -5,7 +5,9 @@ import { inspectAttr } from 'kimi-plugin-inspect-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: './',
+  // Root-absolute. A relative base (`./`) makes /shop/ request /shop/assets/*,
+  // which the static host answers with index.html, so the app never boots.
+  base: '/',
   plugins: [inspectAttr(), react()],
   resolve: {
     alias: {
